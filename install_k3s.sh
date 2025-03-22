@@ -10,7 +10,9 @@ RESET="\e[0m"
 # === ENV Variablen laden ===
 if [ -f .env ]; then
   echo -e "${YELLOW}🔄 Lade Umgebungsvariablen aus .env...${RESET}"
-  export "$(grep -v '^#' .env | xargs)"
+  set -o allexport
+  source .env
+  set +o allexport
 else
   echo -e "${RED}❌ .env Datei nicht gefunden! Bitte erstellen!${RESET}"
   exit 1
@@ -48,9 +50,6 @@ if ! command -v k3s >/dev/null 2>&1; then
   curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--disable traefik --write-kubeconfig-mode 644" sh -
 fi
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-
-# (Rest bleibt unverändert)
-
 
 # === TLS Secret Handling ===
 kubectl get ns certs || kubectl create namespace certs
