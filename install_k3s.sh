@@ -44,13 +44,6 @@ fi
 apt update && apt install -y curl open-iscsi nfs-common bash-completion gnupg2 ca-certificates software-properties-common jq dnsutils
 systemctl enable --now iscsid
 
-# === k3s installieren ===
-if ! command -v k3s >/dev/null 2>&1; then
-  echo -e "${YELLOW}🚀 Installiere k3s...${RESET}"
-  curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--disable traefik --write-kubeconfig-mode 644" sh -
-fi
-export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-
 # === TLS Secret Handling ===
 kubectl get ns certs || kubectl create namespace certs
 kubectl -n certs create secret tls wildcard-tls --cert="$TLS_CERT_PATH" --key="$TLS_KEY_PATH" --dry-run=client -o yaml | kubectl apply -f -
@@ -60,6 +53,12 @@ for ns in portainer longhorn-system monitoring ingress-nginx; do
   kubectl get secret wildcard-tls -n certs -o yaml | sed "s/namespace: certs/namespace: $ns/" | kubectl apply -f -
 done
 
+# === k3s installieren ===
+if ! command -v k3s >/dev/null 2>&1; then
+  echo -e "${YELLOW}🚀 Installiere k3s...${RESET}"
+  curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--disable traefik --write-kubeconfig-mode 644" sh -
+fi
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 # === MetalLB ===
 helm repo add metallb https://metallb.github.io/metallb || true
 helm repo update
