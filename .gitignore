@@ -5,9 +5,7 @@
 # VSCode
 .vscode/
 
-# Env Files
-.env
-.env.*
+
 
 # Log files
 *.log
