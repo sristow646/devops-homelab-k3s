@@ -18,7 +18,7 @@ Dieses Script automatisiert die komplette Bereitstellung eines Kubernetes-Cluste
 1️⃣ **Repo klonen**
 
 ```bash
-git clone https://github.com/your-username/devops-homelab-k3s.git
+git clone https://github.com/sristow646/devops-homelab-k3s.git
 cd devops-homelab-k3s
 ```
 
@@ -40,7 +40,7 @@ GRAFANA_ADMIN_PASS=DEINPASSWORT
 3️⃣ **Setup starten**
 
 ```bash
-bash setup.sh
+bash install_k3s.sh
 ```
 
 ---

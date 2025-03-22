@@ -1,9 +1,11 @@
 # 🚀 K3s Homelab Bootstrap Script
 
-![License](https://img.shields.io/github/license/your-username/devops-homelab-k3s)
-![ShellCheck](https://github.com/your-username/devops-homelab-k3s/actions/workflows/shellcheck.yml/badge.svg)
+![License](https://img.shields.io/github/license/sristow646/devops-homelab-k3s)
+![ShellCheck](https://github.com/sristow646/devops-homelab-k3s/actions/workflows/shellcheck.yml/badge.svg)
 ![Made With](https://img.shields.io/badge/Made%20with-Bash-blue)
 ![Built with AI-Assistance](https://img.shields.io/badge/Built%20with-AI--Assistance-blueviolet?style=flat-square)
+[![Docs Available](https://img.shields.io/badge/Docs-Available-blue?style=flat-square)](docs/)
+
 
 ## 📦 Enthaltene Komponenten
 
@@ -31,7 +33,8 @@ cd devops-homelab-k3s
 ```
 
 2. `.env` anlegen und die Werte entsprechend eintragen.
-   Der METALLB_IP_RANGE muss ein Range aus eurem Heimnetz haben und außerhalb des DHCP Range liegen (falls ihr das nutzt)
+
+   Die METALLB_IP_RANGE muss ein Range aus eurem Heimnetz haben und außerhalb des DHCP Ranges liegen (falls ihr das nutzt)
 
 ```ini
 TLS_CERT_PATH=/pfad/zu/deinem/cert.crt
@@ -49,7 +52,7 @@ GRAFANA_ADMIN_PASS=DEINPASSWORT
 3. Script starten
 
 ```bash
-bash setup.sh
+bash install_k3s.sh
 ```
 
 ## 🌐 Zugänge

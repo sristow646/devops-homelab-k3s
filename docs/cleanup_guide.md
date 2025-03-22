@@ -8,7 +8,7 @@ Dieses Script bereinigt dein k3s-Cluster inkl. aller Helm-Releases und zugehöri
 1️⃣ **Repo klonen**
 
 ```bash
-git clone https://github.com/your-username/devops-homelab-k3s.git
+git clone https://github.com/sristow646/devops-homelab-k3s.git
 cd devops-homelab-k3s
 ```
 
@@ -26,7 +26,7 @@ Das Script erkennt automatisch:
 3️⃣ **Neustart des Setups**
 
 ```bash
-bash setup.sh
+bash smart-cluster-cleanup.sh
 ```
 
 ---
