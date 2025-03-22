@@ -28,7 +28,7 @@
 1. Repo klonen
 
 ```bash
-git clone https://github.com/your-username/devops-homelab-k3s.git
+git clone https://github.com/SRISTOW646/devops-homelab-k3s.git
 cd devops-homelab-k3s
 ```
 

@@ -1,12 +1,18 @@
 #!/bin/bash
-set -e
+set +e
+
+# Farbdefinitionen
+GREEN="\e[32m"
+RED="\e[31m"
+YELLOW="\e[33m"
+RESET="\e[0m"
 
 # === ENV Variablen laden ===
 if [ -f .env ]; then
-  echo "🔄 Lade Umgebungsvariablen aus .env..."
-  export $(grep -v '^#' .env | xargs)
+  echo -e "${YELLOW}🔄 Lade Umgebungsvariablen aus .env...${RESET}"
+  export "$(grep -v '^#' .env | xargs)"
 else
-  echo "❌ .env Datei nicht gefunden! Bitte erstellen!"
+  echo -e "${RED}❌ .env Datei nicht gefunden! Bitte erstellen!${RESET}"
   exit 1
 fi
 
@@ -16,6 +22,7 @@ systemctl enable --now iscsid
 
 # === k3s installieren ===
 if ! command -v k3s >/dev/null 2>&1; then
+  echo -e "${YELLOW}🚀 Installiere k3s...${RESET}"
   curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--disable traefik --write-kubeconfig-mode 644" sh -
 fi
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
@@ -36,6 +43,7 @@ helm upgrade --install metallb metallb/metallb --namespace metallb-system --crea
 
 until kubectl -n metallb-system get endpoints metallb-webhook-service -o jsonpath="{.subsets[*].addresses[*].ip}" | grep -q .; do
   sleep 5
+  echo "⏳ Warte auf MetalLB Webhook Service..."
 done
 
 kubectl apply -f - <<EOF
@@ -87,35 +95,68 @@ helm upgrade --install longhorn longhorn/longhorn \
   --set ingress.servicePort="80" \
   --set ingress.annotations."nginx\.ingress\.kubernetes\.io/backend-protocol"="HTTP"
 
-# === Monitoring: Prometheus + Grafana ===
+# === Monitoring: kube-prometheus-stack ===
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts || true
-helm upgrade --install prometheus prometheus-community/prometheus \
+helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
   --namespace monitoring --create-namespace \
-  --set server.ingress.enabled="true" \
-  --set server.ingress.ingressClassName="nginx" \
-  --set server.ingress.hosts[0]="${PROMETHEUS_HOST}" \
-  --set server.ingress.tls[0].hosts[0]="${PROMETHEUS_HOST}" \
-  --set server.ingress.tls[0].secretName="wildcard-tls"
+  --set grafana.ingress.enabled="true" \
+  --set grafana.ingress.ingressClassName="nginx" \
+  --set grafana.ingress.hosts[0]="${GRAFANA_HOST}" \
+  --set grafana.ingress.tls[0].hosts[0]="${GRAFANA_HOST}" \
+  --set grafana.ingress.tls[0].secretName="wildcard-tls" \
+  --set grafana.adminPassword="${GRAFANA_ADMIN_PASS}" \
+  --set prometheus.ingress.enabled="true" \
+  --set prometheus.ingress.ingressClassName="nginx" \
+  --set prometheus.ingress.hosts[0]="${PROMETHEUS_HOST}" \
+  --set prometheus.ingress.tls[0].hosts[0]="${PROMETHEUS_HOST}" \
+  --set prometheus.ingress.tls[0].secretName="wildcard-tls"
 
-helm repo add grafana https://grafana.github.io/helm-charts || true
-helm upgrade --install grafana grafana/grafana \
-  --namespace monitoring \
-  --set ingress.enabled="true" \
-  --set ingress.ingressClassName="nginx" \
-  --set ingress.hosts[0]="${GRAFANA_HOST}" \
-  --set ingress.tls[0].hosts[0]="${GRAFANA_HOST}" \
-  --set ingress.tls[0].secretName="wildcard-tls" \
-  --set adminPassword="${GRAFANA_ADMIN_PASS}" \
-  --set datasources."datasources\.yaml".apiVersion=1 \
-  --set datasources."datasources\.yaml".datasources[0].name="Prometheus" \
-  --set datasources."datasources\.yaml".datasources[0].type="prometheus" \
-  --set datasources."datasources\.yaml".datasources[0].url="http://prometheus-server.monitoring.svc.cluster.local" \
-  --set datasources."datasources\.yaml".datasources[0].access="proxy" \
-  --set datasources."datasources\.yaml".datasources[0].isDefault="true"
+# === Ingress TLS Check + DNS Check ===
+echo "[9/10] Ingress TLS + DNS Check..."
+
+NAMESPACES=("portainer" "longhorn-system" "monitoring")
+SECRET_NAME="wildcard-tls"
+METALLB_IP="${METALLB_IP_RANGE%%-*}"
+
+for ns in "${NAMESPACES[@]}"; do
+  echo "➡ Prüfe Namespace: $ns"
+  kubectl -n "$ns" get ingress -o json | jq -r '
+    .items[] |
+    "Ingress: \(.metadata.name) | Host: \(.spec.rules[].host) | TLS: \(.spec.tls[].secretName)"' | \
+    grep "$SECRET_NAME" || echo -e "${RED}❌ Fehlendes TLS-Secret in Namespace $ns!${RESET}"
+done
+
+SUCCESSFUL_HOSTS=()
+FAILED_HOSTS=()
+
+HOSTS=("${PORTAINER_HOST}" "${LONGHORN_HOST}" "${GRAFANA_HOST}" "${PROMETHEUS_HOST}")
+for h in "${HOSTS[@]}"; do
+  echo "🔍 Prüfe DNS A-Record für $h ..."
+  dig +short "$h" @8.8.8.8 | grep "$METALLB_IP" || echo -e "${RED}❌ WARNUNG: $h zeigt nicht auf $METALLB_IP${RESET}"
+  echo "🌐 Health-Check https://$h ..."
+  success=0
+  for i in {1..5}; do
+    if curl -k --silent --fail "https://$h" >/dev/null; then
+      echo -e "${GREEN}✅ HTTPS erreichbar (Versuch $i)${RESET}"
+      success=1
+      break
+    else
+      echo -e "${YELLOW}⏳ Versuch $i fehlgeschlagen, warte 5s...${RESET}"
+      sleep 5
+    fi
+  done
+  if [ $success -eq 0 ]; then
+    echo -e "${RED}⚠️ Soft-Fail: $h nach 5 Versuchen nicht erreichbar, Setup läuft weiter.${RESET}"
+    FAILED_HOSTS+=("$h")
+  else
+    SUCCESSFUL_HOSTS+=("$h")
+  fi
+  echo ""
+done
 
 # === Abschluss-Info ===
 echo ""
-echo "🚀 === Setup abgeschlossen! ==="
+echo -e "🚀 === ${GREEN}Setup abgeschlossen!${RESET} ==="
 echo ""
 echo "🔗 Deine Services:"
 echo "➡ Portainer:   https://${PORTAINER_HOST}"
@@ -124,4 +165,7 @@ echo "➡ Grafana:     https://${GRAFANA_HOST} | User: admin | PW: ${GRAFANA_ADM
 echo "➡ Prometheus:  https://${PROMETHEUS_HOST}"
 echo "🔒 TLS Secret: wildcard-tls"
 echo "💡 LoadBalancer IP Range: ${METALLB_IP_RANGE}"
+echo ""
+echo -e "=== ${GREEN}Erfolgreich erreichbar:${RESET} ${SUCCESSFUL_HOSTS[*]}"
+echo -e "=== ${RED}Probleme bei:${RESET} ${FAILED_HOSTS[*]}"
 echo ""
