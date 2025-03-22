@@ -1,6 +1,6 @@
 # 🛣️ Projekt-Roadmap
 
-## 🎯 Milestone: v1.1.0 (Geplant)
+## 🎯 Milestone: v1.2.0 (Geplant)
 
 ### ✨ Features:
 - About the Author Section im README
@@ -20,7 +20,6 @@
 ---
 
 ## 📅 Nächste Schritte
-- Testing-Phase: v1.0.0 Live Einsatz
 - Community Feedback & Feature Requests
-- Release v1.1.0: Geplant Q2/2025
+- Release v1.2.0: Geplant Q2/2025
 
