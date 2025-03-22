@@ -114,6 +114,79 @@ helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
   --set grafana.ingress.enabled="true" \
   --set grafana.ingress.ingressClassName="nginx" \
   --set grafana.ingress.hosts[0]="${GRAFANA_HOST}" \
+  --set grafana.ingress.path="/" \
+  --set grafana.ingress.pathType="Prefix" \
+  --set grafana.ingress.tls[0].hosts[0]="${GRAFANA_HOST}" \
+  --set grafana.ingress.tls[0].secretName="wildcard-tls" \
+  --set grafana.ingress.annotations."monitoring\.infranerd\.de/enabled"="\"true\"" \
+  --set grafana.ingress.annotations."team"="devops" \
+  --set grafana.ingress.annotations."environment"="homelab" \
+  --set grafana.adminPassword="${GRAFANA_ADMIN_PASS}" \
+  --set prometheus.ingress.enabled="true" \
+  --set prometheus.ingress.ingressClassName="nginx" \
+  --set prometheus.ingress.hosts[0]="${PROMETHEUS_HOST}" \
+  --set prometheus.ingress.path="/" \
+  --set prometheus.ingress.pathType="Prefix" \
+  --set prometheus.ingress.tls[0].hosts[0]="${PROMETHEUS_HOST}" \
+  --set prometheus.ingress.tls[0].secretName="wildcard-tls" \
+  --set prometheus.ingress.annotations."monitoring\.infranerd\.de/enabled"="\"true\"" \
+  --set prometheus.ingress.annotations."team"="devops" \
+  --set prometheus.ingress.annotations."environment"="homelab"
+
+
+# === Helm Deployments ===
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx || true
+helm repo update
+helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
+  --namespace ingress-nginx \
+  --set controller.service.type=LoadBalancer \
+  --set controller.extraArgs.default-ssl-certificate="ingress-nginx/wildcard-tls"
+
+# === Warte auf Admission Webhook von Ingress-NGINX ===
+echo "⏳ Warte auf ingress-nginx admission webhook..."
+kubectl rollout status deployment ingress-nginx-controller -n ingress-nginx --timeout=120s
+until kubectl get endpoints ingress-nginx-controller-admission -n ingress-nginx -o jsonpath='{.subsets[*].addresses[*].ip}' | grep -q .; do
+  echo "⏳ Webhook Endpoint noch nicht bereit, warte 5s..."
+  sleep 5
+done
+
+echo "✅ Admission Webhook bereit!"
+
+helm upgrade --install portainer portainer/portainer \
+  --namespace portainer \
+  --set service.type="ClusterIP" \
+  --set ingress.enabled="true" \
+  --set ingress.ingressClassName="nginx" \
+  --set ingress.hosts[0].host="${PORTAINER_HOST}" \
+  --set ingress.hosts[0].paths[0].path="/" \
+  --set ingress.hosts[0].paths[0].pathType="Prefix" \
+  --set ingress.tls[0].hosts[0]="${PORTAINER_HOST}" \
+  --set ingress.tls[0].secretName="wildcard-tls" \
+  --set ingress.annotations."monitoring\.infranerd\.de/enabled"="\"true\"" \
+  --set ingress.annotations."team"="devops" \
+  --set ingress.annotations."environment"="homelab"
+
+helm upgrade --install longhorn longhorn/longhorn \
+  --namespace longhorn-system \
+  --set defaultSettings.defaultReplicaCount="1" \
+  --set ingress.enabled="true" \
+  --set ingress.ingressClassName="nginx" \
+  --set ingress.host="${LONGHORN_HOST}" \
+  --set ingress.tls="true" \
+  --set ingress.tlsSecret="wildcard-tls" \
+  --set ingress.servicePort="80" \
+  --set ingress.annotations."nginx\.ingress\.kubernetes\.io/backend-protocol"="HTTP" \
+  --set ingress.annotations."monitoring\.infranerd\.de/enabled"="\"true\"" \
+  --set ingress.annotations."team"="devops" \
+  --set ingress.annotations."environment"="homelab" \
+  --set ingress.path="/" \
+  --set ingress.pathType="Prefix"
+
+helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
+  --namespace monitoring --create-namespace \
+  --set grafana.ingress.enabled="true" \
+  --set grafana.ingress.ingressClassName="nginx" \
+  --set grafana.ingress.hosts[0]="${GRAFANA_HOST}" \
   --set grafana.ingress.hosts[0].paths[0].path="/" \
   --set grafana.ingress.hosts[0].paths[0].pathType="Prefix" \
   --set grafana.ingress.tls[0].hosts[0]="${GRAFANA_HOST}" \

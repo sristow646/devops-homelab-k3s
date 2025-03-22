@@ -113,8 +113,8 @@ helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
   --set grafana.ingress.enabled="true" \
   --set grafana.ingress.ingressClassName="nginx" \
   --set grafana.ingress.hosts[0]="${GRAFANA_HOST}" \
-  --set grafana.ingress.hosts[0].paths[0].path="/" \
-  --set grafana.ingress.hosts[0].paths[0].pathType="Prefix" \
+  --set grafana.ingress.path="/" \
+  --set grafana.ingress.pathType="Prefix" \
   --set grafana.ingress.tls[0].hosts[0]="${GRAFANA_HOST}" \
   --set grafana.ingress.tls[0].secretName="wildcard-tls" \
   --set grafana.ingress.annotations."monitoring\.infranerd\.de/enabled"="\"true\"" \
@@ -124,8 +124,8 @@ helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
   --set prometheus.ingress.enabled="true" \
   --set prometheus.ingress.ingressClassName="nginx" \
   --set prometheus.ingress.hosts[0]="${PROMETHEUS_HOST}" \
-  --set prometheus.ingress.hosts[0].paths[0].path="/" \
-  --set prometheus.ingress.hosts[0].paths[0].pathType="Prefix" \
+  --set prometheus.ingress.path="/" \
+  --set prometheus.ingress.pathType="Prefix" \
   --set prometheus.ingress.tls[0].hosts[0]="${PROMETHEUS_HOST}" \
   --set prometheus.ingress.tls[0].secretName="wildcard-tls" \
   --set prometheus.ingress.annotations."monitoring\.infranerd\.de/enabled"="\"true\"" \
