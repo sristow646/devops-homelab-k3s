@@ -117,7 +117,7 @@ muss eventuell dies in der DNS-Rebind-Schutz freigegeben werden.
 Dieses Projekt wurde mit Unterstützung von **AI-Assistance** (OpenAI / ShellCheck / CI Tools) entwickelt. Ziel ist es, effiziente DevOps-Automatisierung für Homelabs zu fördern.
 
 ## 📝 Hinweise
-- Rancher-freies Setup
+- Nutzung von Resourcen die man auch als Privatanwender bereit stellen kann.
 - TLS-Zertifikate müssen vorhanden sein
 - Optimiert für Homelab & Testumgebungen
 
