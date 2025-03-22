@@ -1,0 +1,37 @@
+# macOS / System Files
+.DS_Store
+._*
+
+# VSCode
+.vscode/
+
+# Env Files
+.env
+.env.*
+
+# Log files
+*.log
+
+# Helm / Kubernetes
+charts/
+release.yaml
+values.yaml
+
+# Terraform (optional falls irgendwann genutzt)
+.terraform/
+terraform.tfstate*
+crash.log
+
+# Backup / tmp files
+*~
+*.bak
+*.swp
+
+# General OS / Editor clutter
+Thumbs.db
+desktop.ini
+
+# Output folders
+dist/
+build/
+tmp/

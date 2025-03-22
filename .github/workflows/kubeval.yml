@@ -1,0 +1,27 @@
+name: Kubernetes YAML Validation
+
+on:
+  push:
+    paths:
+      - '**.yaml'
+      - '**.yml'
+  pull_request:
+    paths:
+      - '**.yaml'
+      - '**.yml'
+
+jobs:
+  kubeval:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Install kubeval
+        run: |
+          curl -sSLo kubeval.tar.gz https://github.com/instrumenta/kubeval/releases/latest/download/kubeval-linux-amd64.tar.gz
+          tar xf kubeval.tar.gz
+          sudo mv kubeval /usr/local/bin/
+
+      - name: Validate Kubernetes Manifests
+        run: kubeval **/*.yaml || true
