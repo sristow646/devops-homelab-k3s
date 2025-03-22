@@ -18,17 +18,31 @@ else
   exit 1
 fi
 
+# === Preflight Check für Ingress Hosts ===
+REQUIRED_VARS=("PORTAINER_HOST" "LONGHORN_HOST" "GRAFANA_HOST" "PROMETHEUS_HOST")
+MISSING=0
+
+for var in "${REQUIRED_VARS[@]}"; do
+  if [ -z "${!var}" ]; then
+    echo -e "${RED}❌ Fehler: ${var} ist nicht gesetzt in .env${RESET}"
+    MISSING=1
+  fi
+  if [[ ! ${!var} =~ ^[a-z0-9]([a-z0-9\-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9\-]*[a-z0-9])?)*$ ]]; then
+    echo -e "${RED}❌ Fehler: ${var} hat keinen gültigen RFC 1123 Domain-Namen: '${!var}'${RESET}"
+    MISSING=1
+  fi
+done
+
+if [ $MISSING -eq 1 ]; then
+  echo -e "${RED}❌ Abbruch wegen ungültiger oder fehlender Ingress Domains.${RESET}"
+  exit 1
+else
+  echo -e "${GREEN}✅ Alle Ingress-Hosts valide!${RESET}"
+fi
 
 # === System vorbereiten ===
 apt update && apt install -y curl open-iscsi nfs-common bash-completion gnupg2 ca-certificates software-properties-common jq dnsutils
 systemctl enable --now iscsid
-
-# === Namespace Preflight ===
-for ns in ingress-nginx portainer longhorn-system monitoring; do
-  kubectl get ns $ns >/dev/null 2>&1 || kubectl create namespace $ns
-done
-
-
 
 # === k3s installieren ===
 if ! command -v k3s >/dev/null 2>&1; then
@@ -36,6 +50,28 @@ if ! command -v k3s >/dev/null 2>&1; then
   curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--disable traefik --write-kubeconfig-mode 644" sh -
 fi
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
+# === Namespace Preflight & TLS Secrets ===
+for ns in ingress-nginx portainer longhorn-system monitoring; do
+  kubectl get ns $ns >/dev/null 2>&1 || kubectl create namespace $ns
+  kubectl get secret wildcard-tls -n certs >/dev/null 2>&1 || continue
+  kubectl get secret wildcard-tls -n certs -o yaml | sed "s/namespace: certs/namespace: $ns/" | kubectl apply -f -
+done
+
+# === TLS Ursprungs-Secret ===
+kubectl get ns certs || kubectl create namespace certs
+kubectl -n certs create secret tls wildcard-tls --cert="$TLS_CERT_PATH" --key="$TLS_KEY_PATH" --dry-run=client -o yaml | kubectl apply -f -
+
+# === Helm Deployments ===
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx || true
+helm repo update
+helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
+  --namespace ingress-nginx \
+  --set controller.service.type=LoadBalancer \
+  --set controller.extraArgs.default-ssl-certificate="ingress-nginx/wildcard-tls"
+
+# (Helm Deployments Portainer, Longhorn, Monitoring bleiben gleich)
+
 
 # === Preflight Check für Ingress Hosts ===
 REQUIRED_VARS=("PORTAINER_HOST" "LONGHORN_HOST" "GRAFANA_HOST" "PROMETHEUS_HOST")
