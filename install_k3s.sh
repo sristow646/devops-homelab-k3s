@@ -10,7 +10,7 @@ RESET="\e[0m"
 # === ENV Variablen laden ===
 if [ -f .env ]; then
   echo -e "${YELLOW}🔄 Lade Umgebungsvariablen aus .env...${RESET}"
-  export $(grep -v '^#' .env | xargs)
+  export "$(grep -v '^#' .env | xargs)"
 else
   echo -e "${RED}❌ .env Datei nicht gefunden! Bitte erstellen!${RESET}"
   exit 1
