@@ -68,6 +68,9 @@ sind – so, wie es auch in professionellen Netzwerken Standard ist.
 - Ubuntu / Debian VM (min. 4 CPUs / 8GB RAM empfohlen)
 - Wildcard TLS-Zertifikat & Private Key
 - Internetzugang
+Das man mit den Ubuntu Voraussetzungen keinen Blumentopf gewinnen kann, sollte jeden klar sein.
+Aber man kann zumindest kleinere Projekte testen.
+Unter docs/proxmox.md habe ich meine Konfigurtion angegeben und die reicht erst mal für die meisten fälle.
 
 ## 🛠️ Benutzung
 
