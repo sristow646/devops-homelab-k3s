@@ -1,7 +1,7 @@
 
 🚀 Proxmox Cloud-Init VM von A bis Z
 
-Falls Du auch Proxmox nutzt, hier eine Kurzanleitung zum bereitstellen einer CLoud-Init VM
+Falls Du auch Proxmox nutzt, hier eine Kurzanleitung zum bereitstellen einer Cloud-Init VM
 
 Mein System ist:
 
