@@ -19,6 +19,8 @@
 ## 🏡 Homelab K3s Architekturübersicht
 
 Dieses Homelab-Setup nutzt **k3s** als leichtgewichtige Kubernetes-Distribution und automatisiert die Bereitstellung von Ingress, Storage und Monitoring.
+Da Container üblicherweise wechselnde IP-Adressen erhalten, habe ich besonderen Wert darauf gelegt, sie über Ingress-Controller und sprechende URLs erreichbar
+zu machen – so, wie es auch in professionellen Netzwerken Standard ist.
 
 ### 🔗 Netzwerk-Topologie:
 - **Client PC** → **Fritz!Box Router** → **k3s Cluster (Ingress-NGINX LoadBalancer)**
