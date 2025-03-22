@@ -98,6 +98,16 @@ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
   --set controller.service.type=LoadBalancer \
   --set controller.extraArgs.default-ssl-certificate="ingress-nginx/wildcard-tls"
 
+  # === Warte auf Admission Webhook von Ingress-NGINX ===
+echo "⏳ Warte auf ingress-nginx admission webhook..."
+kubectl rollout status deployment ingress-nginx-controller -n ingress-nginx --timeout=120s
+until kubectl get endpoints ingress-nginx-controller-admission -n ingress-nginx -o jsonpath='{.subsets[*].addresses[*].ip}' | grep -q .; do
+  echo "⏳ Webhook Endpoint noch nicht bereit, warte 5s..."
+  sleep 5
+done
+
+echo "✅ Admission Webhook bereit!"
+
 helm upgrade --install portainer portainer/portainer \
   --namespace portainer \
   --set service.type="ClusterIP" \
