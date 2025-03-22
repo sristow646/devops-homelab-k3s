@@ -16,7 +16,6 @@
 - Longhorn – Distributed Block Storage für Kubernetes
 - Prometheus – Metrics & Monitoring
 - Grafana – Visualisierung & Dashboards
-
 ## 🏡 Homelab K3s Architekturübersicht
 
 Dieses Homelab-Setup nutzt **k3s** als leichtgewichtige Kubernetes-Distribution und automatisiert die Bereitstellung von Ingress, Storage und Monitoring.
@@ -52,6 +51,12 @@ Dieses Homelab-Setup nutzt **k3s** als leichtgewichtige Kubernetes-Distribution 
 
 ### 🌐 Externe Zugriffe:
 - Services wie Portainer, Grafana & Prometheus sind über die Fritz!Box (Portforwarding o. DynDNS) erreichbar.
+
+### 🏷️ Bonus: DNS & Domain
+- Nutzung einer privaten Domain (z. B. `privat.de`) mit Wildcard-Zertifikat (*.privat.de) über einen günstigen Hoster: z.B. Ionus
+- DNS (IONUS) leitet Subdomains wie `portainer.privat.de` direkt auf die MetalLB IP (z. B. 192.168.xxx.xxx)
+- Ingress-NGINX übernimmt die TLS-Terminierung für alle Subdomains im Cluster
+- Optional: DynDNS über Fritz!Box für externen Zugriff
 
 
 
@@ -102,6 +107,10 @@ bash install_k3s.sh
 | Longhorn     | https://longhorn.example.com   | Zugriff über Web-UI                 |
 | Grafana      | https://grafana.example.com    | admin / Passwort aus `.env`         |
 | Prometheus   | https://prometheus.example.com | Kein Login (TLS-only)               |
+
+DIe URL's verweisen jeweils auf eine private IP und sind somit nicht aus dem Internet erreichbar!
+Da die Fritz.Box DNS anfragen aus dem öffentlichen Netz, welche auf eine private IP verweisen blockt,
+muss eventuell dies in der DNS-Rebind-Schutz freigegeben werden.
 
 ## 🤖 About this Project
 
