@@ -17,6 +17,45 @@
 - Prometheus – Metrics & Monitoring
 - Grafana – Visualisierung & Dashboards
 
+## 🏡 Homelab K3s Architekturübersicht
+
+Dieses Homelab-Setup nutzt **k3s** als leichtgewichtige Kubernetes-Distribution und automatisiert die Bereitstellung von Ingress, Storage und Monitoring.
+
+### 🔗 Netzwerk-Topologie:
+- **Client PC** → **Fritz!Box Router** → **k3s Cluster (Ingress-NGINX LoadBalancer)**
+
+### 🧩 Cluster-Komponenten:
+- **k3s Server (Single Node)**  
+  - Lightweight Kubernetes für Homelab-Umgebungen
+  - Installiert ohne Traefik (custom Ingress-NGINX)
+
+- **Ingress-NGINX**
+  - LoadBalancer Service via MetalLB IP-Range
+  - Verarbeitet externe Anfragen und TLS-Terminierung
+
+- **Portainer (via Helm)**
+  - Web-GUI für Kubernetes Management (Ingress abgesichert mit Wildcard-TLS)
+
+- **Longhorn**
+  - Distributed Block Storage für Kubernetes
+  - Single-Replica Konfiguration für Homelab
+
+- **Monitoring Stack**
+  - **Prometheus**: Cluster- und Service-Metriken
+  - **Grafana**: Visualisierung mit vorkonfiguriertem Prometheus-Datasource
+
+### 🔐 Sicherheit & Automatisierung:
+- Wildcard-Zertifikat wird in alle relevanten Namespaces repliziert
+- Helm-Charts für alle Komponenten inkl. Ingress + TLS
+- Admission Webhook Wait-Check für Ingress-NGINX
+- Automatische DNS- und HTTPS-Checks nach der Installation
+
+### 🌐 Externe Zugriffe:
+- Services wie Portainer, Grafana & Prometheus sind über die Fritz!Box (Portforwarding o. DynDNS) erreichbar.
+
+
+
+
 ## ⚙️ Voraussetzungen
 
 - Ubuntu / Debian VM (min. 4 CPUs / 8GB RAM empfohlen)
