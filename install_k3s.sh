@@ -10,10 +10,32 @@ RESET="\e[0m"
 # === ENV Variablen laden ===
 if [ -f .env ]; then
   echo -e "${YELLOW}🔄 Lade Umgebungsvariablen aus .env...${RESET}"
-  export "$(grep -v '^#' .env | xargs)"
+  export $(grep -v '^#' .env | xargs)
 else
   echo -e "${RED}❌ .env Datei nicht gefunden! Bitte erstellen!${RESET}"
   exit 1
+fi
+
+# === Preflight Check für Ingress Hosts ===
+REQUIRED_VARS=("PORTAINER_HOST" "LONGHORN_HOST" "GRAFANA_HOST" "PROMETHEUS_HOST")
+MISSING=0
+
+for var in "${REQUIRED_VARS[@]}"; do
+  if [ -z "${!var}" ]; then
+    echo -e "${RED}❌ Fehler: ${var} ist nicht gesetzt in .env${RESET}"
+    MISSING=1
+  fi
+  if [[ ! ${!var} =~ ^[a-z0-9]([a-z0-9\-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9\-]*[a-z0-9])?)*$ ]]; then
+    echo -e "${RED}❌ Fehler: ${var} hat keinen gültigen RFC 1123 Domain-Namen: '${!var}'${RESET}"
+    MISSING=1
+  fi
+done
+
+if [ $MISSING -eq 1 ]; then
+  echo -e "${RED}❌ Abbruch wegen ungültiger oder fehlender Ingress Domains.${RESET}"
+  exit 1
+else
+  echo -e "${GREEN}✅ Alle Ingress-Hosts valide!${RESET}"
 fi
 
 # === System vorbereiten ===
@@ -26,6 +48,9 @@ if ! command -v k3s >/dev/null 2>&1; then
   curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--disable traefik --write-kubeconfig-mode 644" sh -
 fi
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
+# (Rest bleibt unverändert)
+
 
 # === TLS Secret Handling ===
 kubectl get ns certs || kubectl create namespace certs
