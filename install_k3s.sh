@@ -44,12 +44,16 @@ fi
 apt update && apt install -y curl open-iscsi nfs-common bash-completion gnupg2 ca-certificates software-properties-common jq dnsutils
 systemctl enable --now iscsid
 
+# === Namespace Preflight ===
+for ns in ingress-nginx portainer longhorn-system monitoring; do
+  kubectl get ns $ns >/dev/null 2>&1 || kubectl create namespace $ns
+done
+
 # === TLS Secret Handling ===
 kubectl get ns certs || kubectl create namespace certs
 kubectl -n certs create secret tls wildcard-tls --cert="$TLS_CERT_PATH" --key="$TLS_KEY_PATH" --dry-run=client -o yaml | kubectl apply -f -
 
 for ns in portainer longhorn-system monitoring ingress-nginx; do
-  kubectl get ns $ns || kubectl create namespace $ns
   kubectl get secret wildcard-tls -n certs -o yaml | sed "s/namespace: certs/namespace: $ns/" | kubectl apply -f -
 done
 
@@ -59,6 +63,8 @@ if ! command -v k3s >/dev/null 2>&1; then
   curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--disable traefik --write-kubeconfig-mode 644" sh -
 fi
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
+
 # === MetalLB ===
 helm repo add metallb https://metallb.github.io/metallb || true
 helm repo update
@@ -94,6 +100,7 @@ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
   --set controller.service.type=LoadBalancer \
   --set controller.extraArgs.default-ssl-certificate="ingress-nginx/wildcard-tls"
 
+
 # === Portainer (mit Labels & Annotations) ===
 helm upgrade --install portainer portainer/portainer \
   --namespace portainer \
@@ -108,6 +115,7 @@ helm upgrade --install portainer portainer/portainer \
   --set ingress.annotations."monitoring\.infranerd\.de/enabled"="true" \
   --set ingress.annotations."team"="devops" \
   --set ingress.annotations."environment"="homelab"
+
 
 # === Longhorn ===
 helm upgrade --install longhorn longhorn/longhorn \
@@ -145,6 +153,11 @@ helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
   --set prometheus.ingress.hosts[0]="${PROMETHEUS_HOST}" \
   --set prometheus.ingress.hosts[0].paths[0].path="/" \
   --set prometheus.ingress.hosts[0].paths[0].pathType="Prefix" \
+  --set prometheus.ingress.tls[0].hosts[0]="${PROMETHEUS_HOST}" \
+  --set prometheus.ingress.tls[0].secretName="wildcard-tls" \
+  --set prometheus.ingress.annotations."monitoring\.infranerd\.de/enabled"="true" \
+  --set prometheus.ingress.annotations."team"="devops" \
+  --set prometheus.ingress.annotations."environment"="homelab"
   --set prometheus.ingress.tls[0].hosts[0]="${PROMETHEUS_HOST}" \
   --set prometheus.ingress.tls[0].secretName="wildcard-tls" \
   --set prometheus.ingress.annotations."monitoring\.infranerd\.de/enabled"="true" \
