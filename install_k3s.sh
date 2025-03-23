@@ -68,8 +68,8 @@ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
   --set controller.service.type=LoadBalancer \
   --set controller.extraArgs.default-ssl-certificate="ingress-nginx/wildcard-tls"\
   --set podAnnotations."auto-restart"="$(date +%s)"
-
-  # === Warte auf Admission Webhook von Ingress-NGINX ===
+echo -e "${YELLOW}🔄 Auto-Restart Hook via podAnnotations für Ingress-NGINX gesetzt (Namespace: ingress-nginx).${RESET}"
+# === Warte auf Admission Webhook von Ingress-NGINX ===
 echo "⏳ Warte auf ingress-nginx admission webhook..."
 kubectl rollout status deployment ingress-nginx-controller -n ingress-nginx --timeout=120s
 until kubectl get endpoints ingress-nginx-controller-admission -n ingress-nginx -o jsonpath='{.subsets[*].addresses[*].ip}' | grep -q .; do
@@ -93,7 +93,7 @@ helm upgrade --install portainer portainer/portainer \
   --set ingress.annotations."team"="devops" \
   --set ingress.annotations."environment"="homelab"\
   --set podAnnotations."auto-restart"="$(date +%s)"
-
+echo -e "${YELLOW}🔄 Auto-Restart Hook via podAnnotations für Portainer gesetzt (Namespace: portainer).${RESET}"
 
 helm upgrade --install longhorn longhorn/longhorn \
   --namespace longhorn-system \
@@ -111,7 +111,7 @@ helm upgrade --install longhorn longhorn/longhorn \
   --set ingress.path="/" \
   --set ingress.pathType="Prefix"\
   --set podAnnotations."auto-restart"="$(date +%s)"
-
+  echo -e "${YELLOW}🔄 Auto-Restart Hook via podAnnotations für Longhorn gesetzt (Namespace: longhorn-system).${RESET}"
 
 helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
   --namespace monitoring --create-namespace \
@@ -137,7 +137,7 @@ helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
   --set prometheus.ingress.annotations."team"="devops" \
   --set prometheus.ingress.annotations."environment"="homelab"\
   --set podAnnotations."auto-restart"="$(date +%s)"
-
+echo -e "${YELLOW}🔄 Auto-Restart Hook via podAnnotations für Monitoring Stack gesetzt (Namespace: monitoring).${RESET}"
 
 # === MetalLB ===
 helm repo add metallb https://metallb.github.io/metallb || true
@@ -148,6 +148,7 @@ until kubectl -n metallb-system get endpoints metallb-webhook-service -o jsonpat
   sleep 5
   echo "⏳ Warte auf MetalLB Webhook Service..."
 done
+echo -e "${GREEN}✅ MetalLB Controller bereit (Namespace: metallb-system).${RESET}"
 
 kubectl apply -f - <<EOF
 apiVersion: metallb.io/v1beta1
