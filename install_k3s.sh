@@ -66,7 +66,8 @@ helm repo update
 helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
   --namespace ingress-nginx \
   --set controller.service.type=LoadBalancer \
-  --set controller.extraArgs.default-ssl-certificate="ingress-nginx/wildcard-tls"
+  --set controller.extraArgs.default-ssl-certificate="ingress-nginx/wildcard-tls"\
+  --set podAnnotations."auto-restart"="$(date +%s)"
 
   # === Warte auf Admission Webhook von Ingress-NGINX ===
 echo "⏳ Warte auf ingress-nginx admission webhook..."
@@ -90,7 +91,9 @@ helm upgrade --install portainer portainer/portainer \
   --set ingress.tls[0].secretName="wildcard-tls" \
   --set ingress.annotations."monitoring\.infranerd\.de/enabled"="\"true\"" \
   --set ingress.annotations."team"="devops" \
-  --set ingress.annotations."environment"="homelab"
+  --set ingress.annotations."environment"="homelab"\
+  --set podAnnotations."auto-restart"="$(date +%s)"
+
 
 helm upgrade --install longhorn longhorn/longhorn \
   --namespace longhorn-system \
@@ -106,7 +109,9 @@ helm upgrade --install longhorn longhorn/longhorn \
   --set ingress.annotations."team"="devops" \
   --set ingress.annotations."environment"="homelab" \
   --set ingress.path="/" \
-  --set ingress.pathType="Prefix"
+  --set ingress.pathType="Prefix"\
+  --set podAnnotations."auto-restart"="$(date +%s)"
+
 
 helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
   --namespace monitoring --create-namespace \
@@ -130,7 +135,9 @@ helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
   --set prometheus.ingress.tls[0].secretName="wildcard-tls" \
   --set prometheus.ingress.annotations."monitoring\.infranerd\.de/enabled"="\"true\"" \
   --set prometheus.ingress.annotations."team"="devops" \
-  --set prometheus.ingress.annotations."environment"="homelab"
+  --set prometheus.ingress.annotations."environment"="homelab"\
+  --set podAnnotations."auto-restart"="$(date +%s)"
+
 
 # === MetalLB ===
 helm repo add metallb https://metallb.github.io/metallb || true
