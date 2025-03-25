@@ -8,13 +8,14 @@ YELLOW="\e[33m"
 RESET="\e[0m"
 
 # === ENV Variablen laden ===
-if [ -f .env ]; then
+if [ -f env/.env ]; then
   echo -e "${YELLOW}🔄 Lade Umgebungsvariablen aus .env...${RESET}"
   set -o allexport
-  source .env
+  # shellcheck disable=SC1091
+  source env/.env
   set +o allexport
 else
-  echo -e "${RED}❌ .env Datei nicht gefunden! Bitte erstellen!${RESET}"
+  echo -e "${RED}❌ env/.env Datei nicht gefunden! Bitte erstellen!${RESET}"
   exit 1
 fi
 
