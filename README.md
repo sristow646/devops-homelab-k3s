@@ -88,8 +88,8 @@ Ein paar Eindrücke aus dem Setup – inklusive Portainer UI, Longhorn Dashboard
 Dieses Projekt entstand im Rahmen meines privaten Homelabs, um meine Fähigkeiten im Bereich Kubernetes, Automatisierung und Infrastructure-as-Code kontinuierlich zu verbessern. Als DevOps Engineer liegt mein Fokus auf effizienten, wartbaren und sicheren Deployments – sowohl im professionellen Umfeld als auch privat.
 
 - 🧑 GitHub: [github.com/sristow646](https://github.com/sristow646)
-- 💼 LinkedIn: *[optional einfügen, falls vorhanden]*
-- 📫 Kontakt: *[optional E-Mail oder Linktree]*
+- 💼 LinkedIn: www.linkedin.com/in/stephan-ristow
+
 
 ---
 
