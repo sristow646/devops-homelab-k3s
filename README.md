@@ -61,7 +61,16 @@ Dieses Projekt richtet sich an alle, die Kubernetes im Homelab oder in kleinen p
 ## 📸 Vorschau (optional)
 
 > *(Optional – hier kannst du Screenshots von z. B. Portainer UI, Grafana Dashboards oder kubectl-Ausgaben einfügen, um visuelle Eindrücke zu geben.)*
-![alt picture](bilder/Bildschirmfoto%202025-03-25%20um%2005.28.57.png)
+## 📸 Vorschau
+
+Ein paar Eindrücke aus dem Setup – inklusive Portainer UI, Longhorn Dashboard und Grafana Monitoring.
+
+<p float="left">
+  <img src="https://raw.githubusercontent.com/sristow646/devops-homelab-k3s/main/bilder/shell.png" alt="Portainer UI" width="400"/>
+  <img src="https://raw.githubusercontent.com/sristow646/devops-homelab-k3s/main/screenshots/longhorn-dashboard.png" alt="Longhorn Dashboard" width="400"/>
+  <img src="https://raw.githubusercontent.com/sristow646/devops-homelab-k3s/main/screenshots/grafana-monitoring.png" alt="Grafana Dashboard" width="400"/>
+</p>
+
 ---
 
 ## 📖 Doku & Weiteres
