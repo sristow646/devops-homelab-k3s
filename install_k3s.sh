@@ -11,6 +11,7 @@ RESET="\e[0m"
 if [ -f .env ]; then
   echo -e "${YELLOW}🔄 Lade Umgebungsvariablen aus .env...${RESET}"
   set -o allexport
+  # shellcheck disable=SC1091
   source .env
   set +o allexport
 else
