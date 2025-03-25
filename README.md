@@ -45,11 +45,11 @@ Dieses Projekt richtet sich an alle, die Kubernetes im Homelab oder in kleinen p
 
 ```bash
 .
-├── Install_k3s.sh                # Haupt-Setup-Script für das Cluster
-├── configs/                      # Helm Values & Manifest-Vorlagen
+├── install_k3s.sh                # Haupt-Setup-Script für das Cluster
+├── bilder/                       # Screenshoots für README
 ├── env/                          # Beispielhafte ENV-Dateien
-├── actions/                      # GitHub Actions Workflows (CI)
-├── certs/                        # TLS-Zertifikat Integration
+├── .gitlab/                      # GitHub Actions Workflows (CI)
+├── scripts/                      # optionale hilfreiche scripte
 └── README.md                     # Dieses Dokument
 ```
 
