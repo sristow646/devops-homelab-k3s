@@ -52,15 +52,13 @@ Dieses Projekt richtet sich an alle, die Kubernetes im Homelab oder in kleinen p
 2. 🔐 Hinterlege dein Wildcard-Zertifikat in `certs/`.
 3. ▶️ Starte das Setup:
    ```bash
-   chmod +x Install_k3s.sh
+   chmod +x install_k3s.sh
    ./Install_k3s.sh
    ```
-
+   oder einfach bash install_k3s.sh
+   ```
 ---
 
-## 📸 Vorschau (optional)
-
-> *(Optional – hier kannst du Screenshots von z. B. Portainer UI, Grafana Dashboards oder kubectl-Ausgaben einfügen, um visuelle Eindrücke zu geben.)*
 ## 📸 Vorschau
 
 Ein paar Eindrücke aus dem Setup – inklusive Portainer UI, Longhorn Dashboard und Grafana Monitoring.
