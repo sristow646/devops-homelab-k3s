@@ -1,3 +1,12 @@
+# 🚀 K3s Homelab Bootstrap Script
+
+![License](https://img.shields.io/github/license/sristow646/devops-homelab-k3s)
+![ShellCheck](https://github.com/sristow646/devops-homelab-k3s/actions/workflows/shellcheck.yml/badge.svg)
+![Made With](https://img.shields.io/badge/Made%20with-Bash-blue)
+![Built with AI-Assistance](https://img.shields.io/badge/Built%20with-AI--Assistance-blueviolet?style=flat-square)
+[![Docs Available](https://img.shields.io/badge/Docs-Available-blue?style=flat-square)](docs/)
+
+
 # 🚀 DevOps Homelab K3s
 
 Willkommen zu meinem DevOps Homelab Setup – einem vollständig automatisierten Kubernetes-Cluster basierend auf [K3s](https://k3s.io), das moderne Self-Hosting-Tools wie Portainer, Longhorn und Grafana integriert. Ziel dieses Projekts ist es, eine modulare, wartbare und CI/CD-fähige Infrastruktur für Self-Hosted-Anwendungen aufzubauen – ganz im Sinne von Infrastructure-as-Code.
