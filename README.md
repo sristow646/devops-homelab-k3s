@@ -1,130 +1,88 @@
-# 🚀 K3s Homelab Bootstrap Script
+# 🚀 DevOps Homelab K3s
 
-![License](https://img.shields.io/github/license/sristow646/devops-homelab-k3s)
-![ShellCheck](https://github.com/sristow646/devops-homelab-k3s/actions/workflows/shellcheck.yml/badge.svg)
-![Made With](https://img.shields.io/badge/Made%20with-Bash-blue)
-![Built with AI-Assistance](https://img.shields.io/badge/Built%20with-AI--Assistance-blueviolet?style=flat-square)
-[![Docs Available](https://img.shields.io/badge/Docs-Available-blue?style=flat-square)](docs/)
+Willkommen zu meinem DevOps Homelab Setup – einem vollständig automatisierten Kubernetes-Cluster basierend auf [K3s](https://k3s.io), das moderne Self-Hosting-Tools wie Portainer, Longhorn und Grafana integriert. Ziel dieses Projekts ist es, eine modulare, wartbare und CI/CD-fähige Infrastruktur für Self-Hosted-Anwendungen aufzubauen – ganz im Sinne von Infrastructure-as-Code.
 
+---
 
-## 📦 Enthaltene Komponenten
+## 🔍 Projektüberblick
 
-- K3s – leichtgewichtiger Kubernetes Cluster
-- MetalLB – Layer2 LoadBalancer für bare-metal Kubernetes
-- Ingress-NGINX – Ingress-Controller
-- Portainer – Kubernetes GUI & Verwaltung
-- Longhorn – Distributed Block Storage für Kubernetes
-- Prometheus – Metrics & Monitoring
-- Grafana – Visualisierung & Dashboards
-## 🏡 Homelab K3s Architekturübersicht
+Dieses Projekt richtet sich an alle, die Kubernetes im Homelab oder in kleinen produktionsnahen Umgebungen automatisiert betreiben möchten. Die gesamte Konfiguration erfolgt über Shell-Skripte, Helm-Charts und ENV-Variablen – vollständig reproduzierbar und anpassbar.
 
-Dieses Homelab-Setup nutzt **k3s** als leichtgewichtige Kubernetes-Distribution und automatisiert die Bereitstellung von Ingress, Storage und Monitoring.
-Da Container üblicherweise wechselnde IP-Adressen erhalten, habe ich besonderen Wert darauf gelegt, sie über Ingress-Controller und sprechende URLs erreichbar
-sind – so, wie es auch in professionellen Netzwerken Standard ist.
+### Was dieses Setup bietet:
 
-### 🔗 Netzwerk-Topologie:
-- **Client PC** → **Fritz!Box Router** → **k3s Cluster (Ingress-NGINX LoadBalancer)**
+- ⚙️ Automatisiertes **K3s-Cluster Setup** (Single Node oder HA möglich)
+- 🧱 Integration von Tools wie **Portainer**, **Longhorn**, **Ingress-NGINX** und **Monitoring**
+- 🔐 **TLS-Handling mit Wildcard-Zertifikaten** (zentrale Verteilung in alle relevanten Namespaces)
+- 🔄 **Auto-Restart Hooks** für wichtige Deployments (Portainer, Longhorn, Grafana)
+- 📈 **Monitoring** via Prometheus, Grafana und optionalen Alerts
+- 🧪 **GitHub Actions CI** zur Code-Qualitätssicherung (ShellCheck, Manifest Checks)
+- 🧩 Modulares Design durch ENV-Dateien und Helm-Values
 
-### 🧩 Cluster-Komponenten:
-- **k3s Server (Single Node)**  
-  - Lightweight Kubernetes für Homelab-Umgebungen
-  - Installiert ohne Traefik (custom Ingress-NGINX)
+---
 
-- **Ingress-NGINX**
-  - LoadBalancer Service via MetalLB IP-Range
-  - Verarbeitet externe Anfragen und TLS-Terminierung
+## 🧰 Verwendete Technologien
 
-- **Portainer (via Helm)**
-  - Web-GUI für Kubernetes Management (Ingress abgesichert mit Wildcard-TLS)
+| Bereich            | Tools / Technologien                       |
+|--------------------|--------------------------------------------|
+| Kubernetes         | [K3s](https://k3s.io), Helm, kubectl       |
+| Netzwerk & TLS     | Ingress-NGINX, MetalLB, IONOS Wildcard-Zertifikat |
+| Self-Hosting Tools | Portainer CE, Longhorn                     |
+| Monitoring         | Prometheus, Grafana                        |
+| Automation         | Bash, GitHub Actions, ENV-Vorlagen         |
 
-- **Longhorn**
-  - Distributed Block Storage für Kubernetes
-  - Single-Replica Konfiguration für Homelab
+---
 
-- **Monitoring Stack**
-  - **Prometheus**: Cluster- und Service-Metriken
-  - **Grafana**: Visualisierung mit vorkonfiguriertem Prometheus-Datasource
-
-### 🔐 Sicherheit & Automatisierung:
-- Wildcard-Zertifikat wird in alle relevanten Namespaces repliziert
-- Helm-Charts für alle Komponenten inkl. Ingress + TLS
-- Admission Webhook Wait-Check für Ingress-NGINX
-- Automatische DNS- und HTTPS-Checks nach der Installation
-
-### 🌐 Externe Zugriffe:
-- Services wie Portainer, Grafana & Prometheus sind über die Fritz!Box (Portforwarding o. DynDNS) erreichbar.
-
-### 🏷️ Bonus: DNS & Domain
-- Nutzung einer privaten Domain (z. B. `privat.de`) mit Wildcard-Zertifikat (*.privat.de) über einen günstigen Hoster: z.B. Ionus
-- DNS (IONUS) leitet Subdomains wie `portainer.privat.de` direkt auf die MetalLB IP (z. B. 192.168.xxx.xxx)
-- Ingress-NGINX übernimmt die TLS-Terminierung für alle Subdomains im Cluster
-- Optional: DynDNS über Fritz!Box für externen Zugriff
-
-
-
-
-## ⚙️ Voraussetzungen
-
-- Ubuntu / Debian VM (min. 4 CPUs / 8GB RAM empfohlen)
-- Wildcard TLS-Zertifikat & Private Key
-- Internetzugang
-Das man mit den Ubuntu Voraussetzungen keinen Blumentopf gewinnen kann, sollte jeden klar sein.
-Aber man kann zumindest kleinere Projekte testen.
-Unter docs/proxmox.md habe ich meine Konfigurtion angegeben und die reicht erst mal für die meisten fälle.
-
-## 🛠️ Benutzung
-
-1. Repo klonen
+## 📦 Projektstruktur
 
 ```bash
-git clone https://github.com/SRISTOW646/devops-homelab-k3s.git
-cd devops-homelab-k3s
+.
+├── Install_k3s.sh                # Haupt-Setup-Script für das Cluster
+├── configs/                      # Helm Values & Manifest-Vorlagen
+├── env/                          # Beispielhafte ENV-Dateien
+├── actions/                      # GitHub Actions Workflows (CI)
+├── certs/                        # TLS-Zertifikat Integration
+└── README.md                     # Dieses Dokument
 ```
 
-2. `.env` anlegen und die Werte entsprechend eintragen.
+---
 
-   Die METALLB_IP_RANGE muss ein Range aus eurem Heimnetz haben und außerhalb des DHCP Ranges liegen (falls ihr das nutzt)
+## 🚀 Schnellstart
 
-```ini
-TLS_CERT_PATH=/pfad/zu/deinem/cert.crt
-TLS_KEY_PATH=/pfad/zu/deinem/key.key
-METALLB_IP_RANGE=192.168.x.x-192.168.x.x
+1. 🔧 Passe deine `.env`-Dateien an (siehe `env/`).
+2. 🔐 Hinterlege dein Wildcard-Zertifikat in `certs/`.
+3. ▶️ Starte das Setup:
+   ```bash
+   chmod +x Install_k3s.sh
+   ./Install_k3s.sh
+   ```
 
-PORTAINER_HOST=portainer.example.com
-LONGHORN_HOST=longhorn.example.com
-GRAFANA_HOST=grafana.example.com
-PROMETHEUS_HOST=prometheus.example.com
+---
 
-GRAFANA_ADMIN_PASS=DEINPASSWORT
-```
+## 📸 Vorschau (optional)
 
-3. Script starten
+> *(Optional – hier kannst du Screenshots von z. B. Portainer UI, Grafana Dashboards oder kubectl-Ausgaben einfügen, um visuelle Eindrücke zu geben.)*
+![alt text](https://file%2B.vscode-resource.vscode-cdn.net/Users/stephanristow/devops-homelab-k3s/devops-homelab-k3s/bilder/Bildschirmfoto%202025-03-25%20um%2005.28.57.png?version%3D1742890835099)
+---
 
-```bash
-bash install_k3s.sh
-```
+## 📖 Doku & Weiteres
 
-## 🌐 Zugänge
+- [K3s Offizielle Doku](https://docs.k3s.io/)
+- [Helm Charts Doku](https://helm.sh/docs/)
+- [Longhorn](https://longhorn.io/)
+- [Portainer](https://www.portainer.io/)
 
-| Service      | URL                         | Zugangsdaten                        |
-|--------------|-----------------------------|-------------------------------------|
-| Portainer    | https://portainer.example.com  | Admin-User wird bei Login erstellt  |
-| Longhorn     | https://longhorn.example.com   | Zugriff über Web-UI                 |
-| Grafana      | https://grafana.example.com    | admin / Passwort aus `.env`         |
-| Prometheus   | https://prometheus.example.com | Kein Login (TLS-only)               |
+---
 
-DIe URL's verweisen jeweils auf eine private IP und sind somit nicht aus dem Internet erreichbar!
-Da die Fritz.Box DNS anfragen aus dem öffentlichen Netz, welche auf eine private IP verweisen blockt,
-muss eventuell dies in der DNS-Rebind-Schutz freigegeben werden.
+## 👤 Über den Autor
 
-## 🤖 About this Project
+Dieses Projekt entstand im Rahmen meines privaten Homelabs, um meine Fähigkeiten im Bereich Kubernetes, Automatisierung und Infrastructure-as-Code kontinuierlich zu verbessern. Als DevOps Engineer liegt mein Fokus auf effizienten, wartbaren und sicheren Deployments – sowohl im professionellen Umfeld als auch privat.
 
-Dieses Projekt wurde mit Unterstützung von **AI-Assistance** (OpenAI / ShellCheck / CI Tools) entwickelt. Ziel ist es, effiziente DevOps-Automatisierung für Homelabs zu fördern.
+- 🧑 GitHub: [github.com/sristow646](https://github.com/sristow646)
+- 💼 LinkedIn: *[optional einfügen, falls vorhanden]*
+- 📫 Kontakt: *[optional E-Mail oder Linktree]*
 
-## 📝 Hinweise
-- Nutzung von Resourcen, die man auch als Privatanwender bereit stellen kann.
-- TLS-Zertifikate müssen vorhanden sein
-- Optimiert für Homelab & Testumgebungen
+---
 
-## 🧑‍💻 Lizenz
-MIT License – feel free to fork & contribute!
+## 🪪 Lizenz
+
+MIT License – feel free to use, adapt, improve & share 🚀
