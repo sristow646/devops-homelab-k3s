@@ -21,7 +21,6 @@ fi
 # === Preflight Check für Ingress Hosts ===
 REQUIRED_VARS=("PORTAINER_HOST" "LONGHORN_HOST" "GRAFANA_HOST" "PROMETHEUS_HOST")
 MISSING=0
-
 for var in "${REQUIRED_VARS[@]}"; do
   if [ -z "${!var}" ]; then
     echo -e "${RED}❌ Fehler: ${var} ist nicht gesetzt in .env${RESET}"
@@ -32,7 +31,6 @@ for var in "${REQUIRED_VARS[@]}"; do
     MISSING=1
   fi
 done
-
 if [ $MISSING -eq 1 ]; then
   echo -e "${RED}❌ Abbruch wegen ungültiger oder fehlender Ingress Domains.${RESET}"
   exit 1
@@ -60,24 +58,57 @@ for ns in ingress-nginx portainer longhorn-system monitoring; do
   kubectl get ns $ns >/dev/null 2>&1 || kubectl create namespace $ns
   kubectl get secret wildcard-tls -n certs -o yaml | sed "s/namespace: certs/namespace: $ns/" | kubectl apply -f -
 done
-# === Helm Deployments ===
+############################################BIS Hierher alles Easy############################################
+
+Alle benötigten Helm Repos hinzufügen
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx || true
+helm repo add metallb https://metallb.github.io/metallb || true
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts || true
+helm repo add grafana https://grafana.github.io/helm-charts || true
 helm repo update
+
+# === Ingress NGINX Deployment ===
+
+
 helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
   --namespace ingress-nginx \
   --set controller.service.type=LoadBalancer \
+  --set controller.service.loadBalancerIP="${METALLB_IP%%-*}" \
   --set controller.extraArgs.default-ssl-certificate="ingress-nginx/wildcard-tls"
 
-  # === Warte auf Admission Webhook von Ingress-NGINX ===
-echo "⏳ Warte auf ingress-nginx admission webhook..."
 kubectl rollout status deployment ingress-nginx-controller -n ingress-nginx --timeout=120s
-until kubectl get endpoints ingress-nginx-controller-admission -n ingress-nginx -o jsonpath='{.subsets[*].addresses[*].ip}' | grep -q .; do
-  echo "⏳ Webhook Endpoint noch nicht bereit, warte 5s..."
+
+# === MetalLB Setup ===
+helm upgrade --install metallb metallb/metallb --namespace metallb-system --create-namespace
+kubectl wait --namespace metallb-system --for=condition=available --timeout=120s deployment/controller
+
+# Warte auf MetalLB Webhook Service
+until kubectl -n metallb-system get endpoints metallb-webhook-service -o jsonpath="{.subsets[*].addresses[*].ip}" | grep -q .; do
+  echo "⏳ Warte auf MetalLB Webhook Service..."
   sleep 5
 done
 
-echo "✅ Admission Webhook bereit!"
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.12/config/crd/bases/metallb.io_ipaddresspools.yaml
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.12/config/crd/bases/metallb.io_l2advertisements.yaml
 
+kubectl apply -f - <<EOF
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: pool
+  namespace: metallb-system
+spec:
+  addresses:
+  - ${METALLB_IP_RANGE}
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: advert
+  namespace: metallb-system
+EOF
+
+# === Portainer Deployment ===
 helm upgrade --install portainer portainer/portainer \
   --namespace portainer \
   --set service.type="ClusterIP" \
@@ -92,6 +123,7 @@ helm upgrade --install portainer portainer/portainer \
   --set ingress.annotations."team"="devops" \
   --set ingress.annotations."environment"="homelab"
 
+# === Longhorn Deployment ===
 helm upgrade --install longhorn longhorn/longhorn \
   --namespace longhorn-system \
   --set defaultSettings.defaultReplicaCount="1" \
@@ -108,6 +140,7 @@ helm upgrade --install longhorn longhorn/longhorn \
   --set ingress.path="/" \
   --set ingress.pathType="Prefix"
 
+# === Monitoring Deployment ===
 helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
   --namespace monitoring --create-namespace \
   --set grafana.ingress.enabled="true" \
@@ -132,39 +165,49 @@ helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
   --set prometheus.ingress.annotations."team"="devops" \
   --set prometheus.ingress.annotations."environment"="homelab"
 
-# === MetalLB ===
-helm repo add metallb https://metallb.github.io/metallb || true
-helm repo update
-helm upgrade --install metallb metallb/metallb --namespace metallb-system --create-namespace
+# === Loki + Tempo Stack ===
+helm upgrade --install loki grafana/loki-stack \
+  --namespace monitoring \
+  --set grafana.enabled=false \
+  --set promtail.enabled=true \
+  --set loki.persistence.enabled=true \
+  --set loki.persistence.size="5Gi"
 
-until kubectl -n metallb-system get endpoints metallb-webhook-service -o jsonpath="{.subsets[*].addresses[*].ip}" | grep -q .; do
-  sleep 5
-  echo "⏳ Warte auf MetalLB Webhook Service..."
-done
+helm upgrade --install tempo grafana/tempo \
+  --namespace monitoring \
+  --set ingress.enabled=false
 
-kubectl apply -f - <<EOF
-apiVersion: metallb.io/v1beta1
-kind: IPAddressPool
+# === Datasources Auto-Provision via ConfigMap (jetzt nach Loki & Tempo) ===
+kubectl apply -n monitoring -f - <<EOF
+apiVersion: v1
+kind: ConfigMap
 metadata:
-  name: pool
-  namespace: metallb-system
-spec:
-  addresses:
-  - ${METALLB_IP_RANGE}
----
-apiVersion: metallb.io/v1beta1
-kind: L2Advertisement
-metadata:
-  name: advert
-  namespace: metallb-system
+  name: grafana-datasources
+  labels:
+    grafana_datasource: "1"
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        url: http://monitoring-kube-prometheus-prometheus.monitoring.svc.cluster.local:9090
+        access: proxy
+        isDefault: true
+      - name: Loki
+        type: loki
+        url: http://loki.monitoring.svc.cluster.local:3100
+        access: proxy
+      - name: Tempo
+        type: tempo
+        url: http://tempo.monitoring.svc.cluster.local:3100
+        access: proxy
 EOF
 
-# === Ingress TLS Check + DNS Check ===
-echo "[9/10] Ingress TLS + DNS Check..."
 
+# === Health-Checks zusammengefasst ===
 NAMESPACES=("portainer" "longhorn-system" "monitoring")
 SECRET_NAME="wildcard-tls"
-METALLB_IP="${METALLB_IP_RANGE%%-*}"
 
 for ns in "${NAMESPACES[@]}"; do
   echo "➡ Prüfe Namespace: $ns"
@@ -180,7 +223,7 @@ FAILED_HOSTS=()
 HOSTS=("${PORTAINER_HOST}" "${LONGHORN_HOST}" "${GRAFANA_HOST}" "${PROMETHEUS_HOST}")
 for h in "${HOSTS[@]}"; do
   echo "🔍 Prüfe DNS A-Record für $h ..."
-  dig +short "$h" @8.8.8.8 | grep "$METALLB_IP" || echo -e "${RED}❌ WARNUNG: $h zeigt nicht auf $METALLB_IP${RESET}"
+  dig +short "$h" @8.8.8.8 | grep "${METALLB_IP%%-*}" || echo -e "${RED}❌ WARNUNG: $h zeigt nicht auf ${METALLB_IP%%-*}${RESET}"
   echo "🌐 Health-Check https://$h ..."
   success=0
   for i in {1..5}; do
@@ -209,7 +252,7 @@ echo ""
 echo "🔗 Deine Services:"
 echo "➡ Portainer:   https://${PORTAINER_HOST}"
 echo "➡ Longhorn:    https://${LONGHORN_HOST}"
-echo "➡ Grafana:     https://${GRAFANA_HOST} | User: admin | PW: ${GRAFANA_ADMIN_PASS}"
+echo "➡ Grafana:     https://${GRAFANA_HOST} | User: admin | PW: \${GRAFANA_ADMIN_PASS}"
 echo "➡ Prometheus:  https://${PROMETHEUS_HOST}"
 echo "🔒 TLS Secret: wildcard-tls"
 echo "💡 LoadBalancer IP Range: ${METALLB_IP_RANGE}"
