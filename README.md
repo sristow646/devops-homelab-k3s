@@ -68,6 +68,7 @@ Ein paar Eindrücke aus dem Setup – inklusive Portainer UI, Longhorn Dashboard
 <p float="left">
   <img src="bilder/shell.png" alt="Installation" width="400"/>
   <img src="bilder/portainer.png" alt="Portainer UI" width="400"/>
+  <img src="bilder/prometheus.png" alt="Prometheus" width="400"/>
   <img src="bilder/grafana.png" alt="Grafana" width="400"/>
   <img src="bilder/loki.png" alt="Loki Dashboard" width="400"/>
 </p>
