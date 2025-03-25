@@ -55,7 +55,9 @@ Dieses Projekt richtet sich an alle, die Kubernetes im Homelab oder in kleinen p
    chmod +x install_k3s.sh
    ./Install_k3s.sh
    ```
-   oder einfach bash install_k3s.sh
+   oder einfach
+   ```
+   bash install_k3s.sh
    ```
 ---
 
@@ -64,10 +66,10 @@ Dieses Projekt richtet sich an alle, die Kubernetes im Homelab oder in kleinen p
 Ein paar Eindrücke aus dem Setup – inklusive Portainer UI, Longhorn Dashboard und Grafana Monitoring.
   <img src="bilder/shell.png" alt="Installation" width="400"/>
 <p float="left">
-  <img src="bilder/portainer.png" alt="Portainer UI" width="400"/>
-  <img src="bilder/prometheus.png" alt="Prometheus" width="400"/>
-  <img src="bilder/grafana.png" alt="Grafana" width="400"/>
-  <img src="bilder/loki.png" alt="Loki Dashboard" width="400"/>
+  <img src="bilder/portainer.png" alt="Portainer UI" width="600"/>
+  <img src="bilder/prometheus.png" alt="Prometheus" width="600"/>
+  <img src="bilder/grafana.png" alt="Grafana" width="600"/>
+  <img src="bilder/loki.png" alt="Loki Dashboard" width="600"/>
 </p>
 
 ---
