@@ -61,7 +61,7 @@ Dieses Projekt richtet sich an alle, die Kubernetes im Homelab oder in kleinen p
 ## 📸 Vorschau (optional)
 
 > *(Optional – hier kannst du Screenshots von z. B. Portainer UI, Grafana Dashboards oder kubectl-Ausgaben einfügen, um visuelle Eindrücke zu geben.)*
-![alt text](https://file%2B.vscode-resource.vscode-cdn.net/Users/stephanristow/devops-homelab-k3s/devops-homelab-k3s/bilder/Bildschirmfoto%202025-03-25%20um%2005.28.57.png?version%3D1742890835099)
+![alt picture](bilder/Bildschirmfoto%202025-03-25%20um%2005.28.57.png)
 ---
 
 ## 📖 Doku & Weiteres
