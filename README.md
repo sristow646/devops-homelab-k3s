@@ -17,7 +17,7 @@ Willkommen zu meinem DevOps Homelab Setup – einem vollständig automatisierten
 
 Dieses Projekt richtet sich an alle, die Kubernetes im Homelab automatisiert betreiben möchten. Die gesamte Konfiguration erfolgt über Shell-Skripte, Helm-Charts und ENV-Variablen – vollständig reproduzierbar und anpassbar.
 Nach durchlauf des Scriptes habt ihr ein eigenes Kubernetes Cluster wo ihr eure Container laufen lassen könnt.
-
+```
 ┌────────────────────┐
 │     Proxmox-Host   │
 │  ThinkCentre Tiny  │
@@ -48,7 +48,7 @@ Nach durchlauf des Scriptes habt ihr ein eigenes Kubernetes Cluster wo ihr eure 
   🧑‍💻 Client       🌍 IONOS DNS
  (Browser)        (*.privat.de)
                   → WAN IP → Fritz!Box
-
+```
 
 
 ### Was dieses Setup bietet:
