@@ -5,6 +5,8 @@
 ![Made With](https://img.shields.io/badge/Made%20with-Bash-blue)
 ![Built with AI-Assistance](https://img.shields.io/badge/Built%20with-AI--Assistance-blueviolet?style=flat-square)
 [![Docs Available](https://img.shields.io/badge/Docs-Available-blue?style=flat-square)](docs/)
+![visitors](https://visitor-badge.laobi.icu/badge?page_id=sristow646.devops-homelab-k3s)
+
 
 
 # 🚀 DevOps Homelab K3s
