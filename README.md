@@ -15,11 +15,45 @@ Willkommen zu meinem DevOps Homelab Setup – einem vollständig automatisierten
 
 ## 🔍 Projektüberblick
 
-Dieses Projekt richtet sich an alle, die Kubernetes im Homelab oder in kleinen produktionsnahen Umgebungen automatisiert betreiben möchten. Die gesamte Konfiguration erfolgt über Shell-Skripte, Helm-Charts und ENV-Variablen – vollständig reproduzierbar und anpassbar.
+Dieses Projekt richtet sich an alle, die Kubernetes im Homelab automatisiert betreiben möchten. Die gesamte Konfiguration erfolgt über Shell-Skripte, Helm-Charts und ENV-Variablen – vollständig reproduzierbar und anpassbar.
+Nach durchlauf des Scriptes habt ihr ein eigenes Kubernetes Cluster wo ihr eure Container laufen lassen könnt.
+
+┌────────────────────┐
+│     Proxmox-Host   │
+│  ThinkCentre Tiny  │
+│      2TB SSD       │
+│     64GB RAM       │
+│  ───────────────── │
+│  📦 VM: Ubuntu 22  │
+│  🧠 k3s + Helm     │
+│  📦 Apps:          │
+│    - Ingress-NGINX │
+│    - Portainer     │
+│    - Longhorn      │
+│    - Monitoring    │
+└────────┬───────────┘
+         │
+         ▼
+┌─────────────────────────────┐
+│    MetalLB (192.168.200.X)  │◄──── Ingress Services
+└─────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────┐
+│      Fritz!Box (LAN DNS)    │
+│  🔁 Lokale DNS-Auflösung     │
+└────────┬────────────┬───────┘
+         │            │
+         ▼            ▼
+  🧑‍💻 Client       🌍 IONOS DNS
+ (Browser)        (*.privat.de)
+                  → WAN IP → Fritz!Box
+
+
 
 ### Was dieses Setup bietet:
 
-- ⚙️ Automatisiertes **K3s-Cluster Setup** (Single Node oder HA möglich)
+- ⚙️ Automatisiertes **K3s-Cluster Setup** (derzeitig nur Single Node )
 - 🧱 Integration von Tools wie **Portainer**, **Longhorn**, **Ingress-NGINX** und **Monitoring**
 - 🔐 **TLS-Handling mit Wildcard-Zertifikaten** (zentrale Verteilung in alle relevanten Namespaces)
 - 🔄 **Auto-Restart Hooks** für wichtige Deployments (Portainer, Longhorn, Grafana)
