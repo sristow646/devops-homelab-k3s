@@ -34,7 +34,7 @@ Boot	SCSI Disk + Cloud-Init (serial0 als Konsole)
 🧰 Schritte:
 1️⃣ Cloud-Image laden
 Empfohlen: Ubuntu Cloud-Image (z.B. Ubuntu 24.04 LTS)
-
+```
 wget https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img -O ubuntu-24.04-cloud.img
 2️⃣ Image nach Proxmox hochladen
 Beispiel: Du hast deinen Proxmox-Storage unter /var/lib/vz
@@ -54,9 +54,11 @@ qm set 110 --ipconfig0 ip=192.168.200.100/24,gw=192.168.200.1
 6️⃣ Cloud-Init anwenden
 qm resize 110 scsi0 +20G     # Optional: Festplattengröße anpassen
 qm template 110              # Optional: als Vorlage speichern
+
 oder direkt starten:
 
 qm start 110
+```
 ✅ Danach hast du:
 Eine lauffähige Cloud-Init VM in Proxmox
 SSH-Zugang via deinem hinterlegten Public Key
